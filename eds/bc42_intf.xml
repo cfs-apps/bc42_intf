@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright 2022 bitValence, Inc.
+    All Rights Reserved.
+
+    This program is free software; you can modify and/or redistribute it
+    under the terms of the GNU Affero General Public License
+    as published by the Free Software Foundation; version 3 with
+    attribution addendums as found in the LICENSE.txt.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU Affero General Public License for more details.
+      
+    Purpose: 
+      This defines interfaces for the 42 Interface app 
+
+    Notes:
+      1. This document adheres to the Electronic Data Sheet (EDS) XML schema 
+         as prescribed in CCSDS book 876.0. 
+      
+-->
+<PackageFile xmlns="http://www.ccsds.org/schema/sois/seds">
+  <Package name="BC42_INTF" shortDescription="Basecamp 42 interface application">
+    <DataTypeSet>
+
+      <!--***********************************-->
+      <!--**** DataTypeSet:  Entry Types ****-->
+      <!--***********************************-->
+
+      <!-- Move to app_c_fw -->
+      <ArrayDataType name="Vec3F" dataTypeRef="BASE_TYPES/float">
+        <DimensionList>
+           <Dimension size="3"/>
+        </DimensionList>
+      </ArrayDataType>
+
+      <ArrayDataType name="Vec3D" dataTypeRef="BASE_TYPES/double">
+        <DimensionList>
+           <Dimension size="3"/>
+        </DimensionList>
+      </ArrayDataType>
+
+      <ArrayDataType name="Vec4F" dataTypeRef="BASE_TYPES/float">
+        <DimensionList>
+           <Dimension size="4"/>
+        </DimensionList>
+      </ArrayDataType>
+
+      <ArrayDataType name="Vec4D" dataTypeRef="BASE_TYPES/double">
+        <DimensionList>
+           <Dimension size="4"/>
+        </DimensionList>
+      </ArrayDataType>
+      
+      <StringDataType name="char_x_16" length="16" />
+      
+      <!--***************************************-->
+      <!--**** DataTypeSet: Command Payloads ****-->
+      <!--***************************************-->
+
+      <ContainerDataType name="ConfigExecuteCmd_Payload" shortDescription="Configure behavior when an execute message is received">
+        <EntryList>
+          <Entry name="MsgCycles"   type="BASE_TYPES/uint16" shortDescription="Number of cycles for each execute msg wakeup" />
+          <Entry name="CycleDelay"  type="BASE_TYPES/uint16" shortDescription="Delay(ms) between execution cycles" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="ConnectCmd_Payload" shortDescription="Connect to 42 socket">
+        <EntryList>
+          <Entry name="IpAddrStr" type="char_x_16"         shortDescription="IP address to send to" />
+          <Entry name="Port"      type="BASE_TYPES/uint16" shortDescription="Port number" />
+        </EntryList>
+      </ContainerDataType>
+
+      <!--*****************************************-->
+      <!--**** DataTypeSet: Telemetry Payloads ****-->
+      <!--*****************************************-->
+ 
+      <ContainerDataType name="StatusTlm_Payload" shortDescription="App's state and status summary">
+        <EntryList>
+          <Entry name="ValidCmdCnt"        type="BASE_TYPES/uint16" />
+          <Entry name="InvalidCmdCnt"      type="BASE_TYPES/uint16" />          
+          <Entry name="SensorDataMsgCnt"   type="BASE_TYPES/uint32" />
+          <Entry name="ActuatorCmdMsgCnt"  type="BASE_TYPES/uint32" />
+          <Entry name="ExecuteCycleCnt"    type="BASE_TYPES/uint16" shortDescription="Execute cycles while connected" />
+          <Entry name="SocketConnected"    type="APP_C_FW/BooleanUint8" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="SensorDataMsg_Payload" shortDescription="42 Sensor Data Message">
+        <LongDescription>
+          The sensor data is already in 'engineering units' Depending upon the sophistication of the sensor, the data
+          would need ot be converted from 'raw data' to 'engineering units. 42 variable names are used for
+          consistency with comments to help clarify their purpose.
+        </LongDescription>
+        <EntryList>
+          <Entry name="GpsTime"   type="BASE_TYPES/double" shortDescription="" />
+          <Entry name="PosN"      type="Vec3D"             shortDescription="" />
+          <Entry name="VelN"      type="Vec3D"             shortDescription="" />
+          <Entry name="qbn"       type="Vec4D"             shortDescription="Star Tracker" />
+          <Entry name="wbn"       type="Vec3D"             shortDescription="Gyro" />
+          <Entry name="svb"       type="Vec3D"             shortDescription="CSS/FSS" />
+          <Entry name="bvb"       type="Vec3D"             shortDescription="TAM" />
+          <Entry name="WhlH"      type="Vec4D"             shortDescription="Wheels. Must agree with bc42.h BC42_NWHL definition. TODO: Make one EDS definition" />
+          <Entry name="GpsValid"  type="APP_C_FW/BooleanUint8"  shortDescription="" />
+          <Entry name="StValid"   type="APP_C_FW/BooleanUint8"  shortDescription="" />
+          <Entry name="SunValid"  type="APP_C_FW/BooleanUint8"  shortDescription="" />
+          <Entry name="InitCycle" type="APP_C_FW/BooleanUint8"  shortDescription="" />          
+       </EntryList>
+      </ContainerDataType>
+
+
+      <ContainerDataType name="ActuatorCmdMsg_Payload" shortDescription="42 Actuator Command Message">
+        <EntryList>
+          <Entry name="Tcmd"    type="Vec3D"             shortDescription="Wheel" />
+          <Entry name="Mcmd"    type="Vec3D"             shortDescription="MTB" />
+          <Entry name="SaGcmd"  type="BASE_TYPES/double" shortDescription="Solar Array" />
+       </EntryList>
+      </ContainerDataType>
+
+
+      <!--**************************************-->
+      <!--**** DataTypeSet: Command Packets ****-->
+      <!--**************************************-->
+
+      <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
+      </ContainerDataType>
+
+      <ContainerDataType name="NoopCmd" baseType="CommandBase" shortDescription="Generate an info event message with app version">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="ResetCmd" baseType="CommandBase" shortDescription="Reset app to a known state">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="ConfigExecuteCmd" baseType="CommandBase" shortDescription="Configure behavior when an execute message is received">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
+        </ConstraintSet>
+        <EntryList>
+          <Entry type="ConfigExecuteCmd_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="ConnectCmd" baseType="CommandBase" shortDescription="Connect to the 42 simulator socket">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+      <ContainerDataType name="DisconnectCmd" baseType="CommandBase" shortDescription="Disconnect from the 42 simulator socket">
+        <ConstraintSet>
+          <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
+        </ConstraintSet>
+      </ContainerDataType>
+
+
+      <!--****************************************-->
+      <!--**** DataTypeSet: Telemetry Packets ****-->
+      <!--****************************************-->
+
+      <ContainerDataType name="StatusTlm" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="StatusTlm_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+     
+      <ContainerDataType name="SensorDataMsg" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="SensorDataMsg_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+      <ContainerDataType name="ActuatorCmdMsg" baseType="CFE_HDR/TelemetryHeader">
+        <EntryList>
+          <Entry type="ActuatorCmdMsg_Payload" name="Payload" />
+        </EntryList>
+      </ContainerDataType>
+
+    </DataTypeSet>
+    
+    <ComponentSet>
+      <Component name="Application">
+
+        <!--***********************************-->
+        <!--**** Component Set: Interfaces ****-->
+        <!--***********************************-->
+      
+        <RequiredInterfaceSet>
+        
+          <Interface name="CMD" shortDescription="Software bus telecommand interface" type="CFE_SB/Telecommand">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelecommandDataType" type="CommandBase" />
+            </GenericTypeMapSet>
+          </Interface>
+          
+          <Interface name="STATUS_TLM" shortDescription="Software bus status telemetry interface" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="StatusTlm" />
+            </GenericTypeMapSet>
+          </Interface>
+          
+          <Interface name="SENSOR_DATA_MSG" shortDescription="" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="SensorDataMsg" />
+            </GenericTypeMapSet>
+          </Interface>
+        
+          <Interface name="ACTUATOR_CMD_MSG" shortDescription="" type="CFE_SB/Telemetry">
+            <GenericTypeMapSet>
+              <GenericTypeMap name="TelemetryDataType" type="ActuatorCmdMsg" />
+            </GenericTypeMapSet>
+          </Interface>
+        
+        </RequiredInterfaceSet>
+ 
+        <!--***************************************-->
+        <!--**** Component Set: Implementation ****-->
+        <!--***************************************-->
+
+        <Implementation>
+          <VariableSet>
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="CmdTopicId"            initialValue="${CFE_MISSION/BC42_INTF_CMD_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="StatusTlmTopicId"      initialValue="${CFE_MISSION/BC42_INTF_STATUS_TLM_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="SensorDataMsgTopicId"  initialValue="${CFE_MISSION/BC42_INTF_SENSOR_DATA_MSG_TOPICID}" />
+            <Variable type="BASE_TYPES/uint16" readOnly="true" name="ActuatorCmdMsgTopicId" initialValue="${CFE_MISSION/BC42_INTF_ACTUATOR_CMD_MSG_TOPICID}" />
+          </VariableSet>
+          <!-- Assign fixed numbers to the "TopicId" parameter of each interface -->
+          <ParameterMapSet>          
+            <ParameterMap interface="CMD"              parameter="TopicId" variableRef="CmdTopicId" />
+            <ParameterMap interface="STATUS_TLM"       parameter="TopicId" variableRef="StatusTlmTopicId" />
+            <ParameterMap interface="SENSOR_DATA_MSG"  parameter="TopicId" variableRef="SensorDataMsgTopicId" />
+            <ParameterMap interface="ACTUATOR_CMD_MSG" parameter="TopicId" variableRef="ActuatorCmdMsgTopicId" />
+          </ParameterMapSet>
+        </Implementation>
+      </Component>
+    </ComponentSet>
+    
+  </Package>
+</PackageFile>
