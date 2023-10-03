@@ -42,13 +42,13 @@
 ** Events Message IDs
 */
 
-#define BC42_INTF_INIT_APP_EID        (BC42_INTF_BASE_EID + 0)
-#define BC42_INTF_EXIT_EID            (BC42_INTF_BASE_EID + 1)
-#define BC42_INTF_EXECUTE_CMD_EID     (BC42_INTF_BASE_EID + 2)
-#define BC42_INTF_CONNECT_TO_42_EID   (BC42_INTF_BASE_EID + 3)
-#define BC42_INTF_NOOP_EID            (BC42_INTF_BASE_EID + 4)
-#define BC42_INTF_INVALID_MID_EID     (BC42_INTF_BASE_EID + 5)
-#define BC42_INTF_DEBUG_EID           (BC42_INTF_BASE_EID + 6)
+#define BC42_INTF_INIT_APP_EID         (BC42_INTF_BASE_EID + 0)
+#define BC42_INTF_EXIT_EID             (BC42_INTF_BASE_EID + 1)
+#define BC42_INTF_EXECUTE_CMD_EID      (BC42_INTF_BASE_EID + 2)
+#define BC42_INTF_CONNECT_TO_42_EID    (BC42_INTF_BASE_EID + 3)
+#define BC42_INTF_NOOP_EID             (BC42_INTF_BASE_EID + 4)
+#define BC42_INTF_PROCESS_CMD_PIPE_EID (BC42_INTF_BASE_EID + 5)
+#define BC42_INTF_DEBUG_EID            (BC42_INTF_BASE_EID + 6)
 
 
 /**********************/
@@ -93,7 +93,6 @@ typedef struct
    
    uint32          PerfId;
    CFE_SB_MsgId_t  CmdMid;
-   CFE_SB_MsgId_t  SendStatusTlmMid;
    CFE_SB_MsgId_t  ActuatorCmdMsgMid;
    CFE_SB_MsgId_t  ExecuteMid;
 

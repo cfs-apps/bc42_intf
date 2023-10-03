@@ -36,6 +36,10 @@
 
 #include "comm42.h"
 
+//~bc~ 42 doesn't define in a header
+extern int ReadFromSocket(SOCKET Socket, struct AcType *AC); //~bc~ 
+extern void WriteToSocket(SOCKET Socket, struct AcType *AC); //~bc~ 
+
 /***********************/
 /** Macro Definitions **/
 /***********************/
@@ -79,6 +83,7 @@ void COMM42_Constructor(COMM42_Class_t *Comm42Obj, const INITBL_Class_t *IniTbl)
 
    CFE_PSP_MemSet((void*)Comm42, 0, sizeof(COMM42_Class_t));
   
+   Comm42->ChildTaskRun = true;
    Comm42->SocketConnected = false;
    Comm42->UnclosedCycleLim = INITBL_GetIntConfig(IniTbl, CFG_EXE_UNCLOSED_CYCLE_LIM);
 
@@ -114,7 +119,6 @@ void COMM42_Close(void)
       OS_close(Comm42->SocketId);
    
       Comm42->SocketConnected = false;
-      OS_BinSemGive(Comm42->WakeUpSemaphore); /* Allow child to terminate gracefully */
       
       CFE_EVS_SendEvent(COMM42_SOCKET_CLOSE_EID, CFE_EVS_EventType_INFORMATION,
                         "Successfully closed socket");
@@ -154,20 +158,20 @@ bool COMM42_ConnectSocket(const char *AddrStr, uint32 Port)
       OS_SocketAddrFromString(&Comm42->SocketAddr, AddrStr);   
       OS_SocketAddrSetPort(&Comm42->SocketAddr, Port);
    
-      Status = OS_SocketBind(Comm42->SocketId, &Comm42->SocketAddr);
+      Status = OS_SocketConnect(Comm42->SocketId, &Comm42->SocketAddr, 2000);
       if (Status == OS_SUCCESS)
       {
          Comm42->InitCycle = true;
          Comm42->SocketConnected = true;
-         CFE_EVS_SendEvent(COMM42_SOCKET_BIND_EID, CFE_EVS_EventType_ERROR, 
-                           "Successfully bound to socket address %s, listening on port %d",
+         CFE_EVS_SendEvent(COMM42_SOCKET_CONNECT_EID, CFE_EVS_EventType_INFORMATION, 
+                           "Successfully connected to socket address %s, listening on port %d",
                            AddrStr, (int)Port);
          
       }
       else
       {
-         CFE_EVS_SendEvent(COMM42_SOCKET_BIND_EID, CFE_EVS_EventType_ERROR, 
-                           "Error binding to socket address %s, OS_SocketBind() return code = %d", 
+         CFE_EVS_SendEvent(COMM42_SOCKET_CONNECT_EID, CFE_EVS_EventType_ERROR, 
+                           "Error connecting to socket address %s, OS_SocketBind() return code = %d", 
                            AddrStr, (int)Status);
       }
    } /* End if open */
@@ -216,7 +220,7 @@ void COMM42_ManageExecution(void)
          return;
       }
       
-      if (Comm42->WakeUpSemaphore != COMM42_SEM_INVALID)
+      if (Comm42->WakeUpSemaphore != COMM42_SEM_INVALID)  // TODO: Not currently being set
       { 
          
          if (Comm42->ActuatorCmdMsgSent == true)
@@ -265,51 +269,57 @@ void COMM42_ManageExecution(void)
 bool COMM42_RecvSensorData(BC42_INTF_SensorDataMsg_t *SensorDataMsg)
 {
 
-   int   i;
+   int   i, NumBytesRead;
    bool  RetStatus = false;
    
    BC42_INTF_SensorDataMsg_Payload_t *SensorData = &SensorDataMsg->Payload;
    
    CFE_EVS_SendEvent(COMM42_DEBUG_EID, CFE_EVS_EventType_DEBUG,
-                     "**** COMM42_RecvSensorData(): ExecCnt=%d, SensorCnt=%d, ActuatorCnt=%d, ActuatorSent=%d\n",
+                     "**** COMM42_RecvSensorData(): ExecCnt=%d, SensorCnt=%d, ActuatorCnt=%d, ActuatorSent=%d",
                      Comm42->ExecuteCycleCnt, Comm42->SensorDataMsgCnt, Comm42->ActuatorCmdMsgCnt, Comm42->ActuatorCmdMsgSent);
 
    Comm42->Bc42 = BC42_TakePtr();
    AC42_(EchoEnabled) = false;
-   BC42_ReadFromSocket(Comm42->SocketId, &Comm42->SocketAddr, &Comm42->Bc42->AcVar);
- 
-   GyroProcessing(AC42);
-   MagnetometerProcessing(AC42);
-   CssProcessing(AC42);
-   FssProcessing(AC42);
-   StarTrackerProcessing(AC42);
-   GpsProcessing(AC42);
-   
-   SensorData->GpsTime = AC42_(Time); 
-   SensorData->GpsValid  = true;
-   SensorData->StValid   = true;
-   SensorData->SunValid  = AC42_(SunValid);
-   SensorData->InitCycle = Comm42->InitCycle;
 
-   for (i=0; i < 3; i++) {
+   NumBytesRead = BC42_ReadFromSocket(Comm42->SocketId, &Comm42->SocketAddr, &Comm42->Bc42->AcVar);
    
-      SensorData->PosN[i] = AC42_(PosN[i]);  /* GPS */
-      SensorData->VelN[i] = AC42_(VelN[i]);
-   
-      SensorData->qbn[i]  = AC42_(qbn[i]);   /* ST */
+   if (NumBytesRead > 0)
+   {
+      GyroProcessing(AC42);
+      MagnetometerProcessing(AC42);
+      CssProcessing(AC42);
+      FssProcessing(AC42);
+      StarTrackerProcessing(AC42);
+      GpsProcessing(AC42);
+      
+      SensorData->GpsTime = AC42_(Time); 
+      SensorData->GpsValid  = true;
+      SensorData->StValid   = true;
+      SensorData->SunValid  = AC42_(SunValid);
+      SensorData->InitCycle = Comm42->InitCycle;
 
-      SensorData->wbn[i]  = AC42_(wbn[i]);   /* Gyro */
-   
-      SensorData->svb[i]  = AC42_(svb[i]);   /* CSS/FSS */
+      for (i=0; i < 3; i++) {
+      
+         SensorData->PosN[i] = AC42_(PosN[i]);  /* GPS */
+         SensorData->VelN[i] = AC42_(VelN[i]);
+      
+         SensorData->qbn[i]  = AC42_(qbn[i]);   /* ST */
 
-      SensorData->bvb[i]  = AC42_(bvb[i]);   /* MTB */
-   
-      SensorData->WhlH[i] = AC42_(Whl[i].H); /* Wheels */
+         SensorData->wbn[i]  = AC42_(wbn[i]);   /* Gyro */
+      
+         SensorData->svb[i]  = AC42_(svb[i]);   /* CSS/FSS */
+
+         SensorData->bvb[i]  = AC42_(bvb[i]);   /* MTB */
+      
+         SensorData->WhlH[i] = AC42_(Whl[i].H); /* Wheels */
+      }
+
+      SensorData->qbn[3]  = AC42_(qbn[3]);
+      SensorData->WhlH[3] = AC42_(Whl[3].H);
+      
+      RetStatus = true;
    }
 
-   SensorData->qbn[3]  = AC42_(qbn[3]);
-   SensorData->WhlH[3] = AC42_(Whl[3].H);
-   
    BC42_GivePtr(Comm42->Bc42);
 
    return RetStatus;
@@ -347,7 +357,7 @@ bool COMM42_SendActuatorCmds(const BC42_INTF_ActuatorCmdMsg_t *ActuatorCmdMsg)
    
 
    CFE_EVS_SendEvent(COMM42_DEBUG_EID, CFE_EVS_EventType_DEBUG,
-                     "**** COMM42_SendActuatorCmds(): ExeCnt=%d, SnrCnt=%d, ActCnt=%d, ActSent=%d\n",
+                     "**** COMM42_SendActuatorCmds(): ExeCnt=%d, SnrCnt=%d, ActCnt=%d, ActSent=%d",
                      Comm42->ExecuteCycleCnt, Comm42->SensorDataMsgCnt, Comm42->ActuatorCmdMsgCnt, Comm42->ActuatorCmdMsgSent);
    
    Comm42->Bc42 = BC42_TakePtr();
@@ -377,6 +387,23 @@ bool COMM42_SendActuatorCmds(const BC42_INTF_ActuatorCmdMsg_t *ActuatorCmdMsg)
 
 
 /******************************************************************************
+** Function: COMM42_Shutdown
+**
+** Close the socket and force a child task exit. The sequence of this code must
+** work with the COMM42_SocketTask() logic to avoid strange. 
+** 
+*/
+void COMM42_Shutdown(void)
+{
+   
+   COMM42_Close();
+   Comm42->ChildTaskRun = false;
+   OS_BinSemGive(Comm42->WakeUpSemaphore);
+   
+} /* End COMM42_Shutdown() */
+
+
+/******************************************************************************
 ** Function: COMM42_SocketTask
 **
 ** Notes:
@@ -390,44 +417,54 @@ bool COMM42_SendActuatorCmds(const BC42_INTF_ActuatorCmdMsg_t *ActuatorCmdMsg)
 */
 bool COMM42_SocketTask(CHILDMGR_Class_t* ChildMgr)
 {
-   
-   bool RetStatus = true;
-   
+      
    int32 CfeStatus;
    
    if (Comm42->SocketConnected)
    {
       
       CFE_EVS_SendEvent(COMM42_DEBUG_EID, CFE_EVS_EventType_DEBUG,
-                        "\n\n**** COMM42_SocketTask(%d) Waiting for semaphore: InitCycle=%d\n",
+                        "**** COMM42_SocketTask(%d) Waiting for semaphore: InitCycle=%d",
                         Comm42->ExecuteCycleCnt, Comm42->InitCycle);    
       
       CfeStatus = OS_BinSemTake(Comm42->WakeUpSemaphore); /* Pend until parent app gives semaphore */
 
-      /* Check connection for termination scenario */
-      if (CfeStatus == CFE_SUCCESS) 
+      // During an interface shutdown ChildTaskRun is set to false and then the semaphore is given
+      if (Comm42->ChildTaskRun)
       {
-         
-         ++Comm42->ExecuteCycleCnt;
-         if (COMM42_RecvSensorData(&(Comm42->SensorDataMsg)) > 0)
+
+         /* Check connection for termination scenario */
+         if (CfeStatus == CFE_SUCCESS) 
          {
-            CFE_SB_TimeStampMsg(CFE_MSG_PTR(Comm42->SensorDataMsg.TelemetryHeader));
-            CfeStatus = CFE_SB_TransmitMsg(CFE_MSG_PTR(Comm42->SensorDataMsg.TelemetryHeader), true);
             
-            if (CfeStatus == CFE_SUCCESS)
+            ++Comm42->ExecuteCycleCnt;
+            if (COMM42_RecvSensorData(&(Comm42->SensorDataMsg)) > 0)
             {
-               ++Comm42->SensorDataMsgCnt;
-               Comm42->ActuatorCmdMsgSent = false;
+               CFE_SB_TimeStampMsg(CFE_MSG_PTR(Comm42->SensorDataMsg.TelemetryHeader));
+               CfeStatus = CFE_SB_TransmitMsg(CFE_MSG_PTR(Comm42->SensorDataMsg.TelemetryHeader), true);
+               
+               if (CfeStatus == CFE_SUCCESS)
+               {
+                  ++Comm42->SensorDataMsgCnt;
+                  Comm42->ActuatorCmdMsgSent = false;
+               }
+               CFE_EVS_SendEvent(COMM42_SOCKET_TASK_EID, CFE_EVS_EventType_INFORMATION,
+                     "Sent Sensor data message: cFEStatus=%d, InitCycle= %d, ExecuteCycleCnt=%d, Comm42->SensorDataMsgCnt=%d",
+                     CfeStatus, Comm42->InitCycle, Comm42->ExecuteCycleCnt, Comm42->SensorDataMsgCnt);  
             }
-         }
-         else
-         {
-            Comm42->SocketConnected = false;
-         }
-      
-      } /* End if valid semaphore */
+            else
+            {
+               CFE_EVS_SendEvent(COMM42_SOCKET_TASK_EID, CFE_EVS_EventType_INFORMATION,
+                                 "Closing socket after received data failure: InitCycle= %d, ExecuteCycleCnt=%d",
+                                 Comm42->InitCycle, Comm42->ExecuteCycleCnt);    
+               COMM42_Close();
+            }
+         
+         } /* End if valid semaphore */
+      } /* End if run child task */
    } /* End if socket connected */
-      
-   return RetStatus;
+   
+   return Comm42->ChildTaskRun;
 
 } /* End COMM42_SocketTask() */
+

@@ -66,7 +66,8 @@ DEFINE_ENUM(Config,APP_CONFIG)
 static CFE_EVS_BinFilter_t  EventFilters[] =
 {  
    /* Event ID                           Mask */
-   {COMM42_DEBUG_EID,  CFE_EVS_FIRST_64_STOP}, //CFE_EVS_NO_FILTER
+   {COMM42_DEBUG_EID,    CFE_EVS_FIRST_64_STOP}, //CFE_EVS_NO_FILTER
+   {BC42_INTF_DEBUG_EID, CFE_EVS_FIRST_64_STOP}
 };
 
 /*****************/
@@ -235,7 +236,6 @@ bool BC42_INTF_DisconnectCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 {
 
    COMM42_Close();
-   
    return true;
    
 } /* End BC42_INTF_DisconnectCmd() */
@@ -285,8 +285,9 @@ bool BC42_INTF_ResetAppCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
 */
 static void AppTermCallback(void)
 {
- 
-   COMM42_Close();
+   
+   CFE_ES_WriteToSysLog("BC42_INTF app termination function shutting down COMM42 interface\n");   /* Use SysLog, events may not be working */
+   COMM42_Shutdown();
    
 } /* End AppTermCallback() */
 
@@ -325,8 +326,7 @@ static int32 InitApp(void)
       Bc42Intf.PerfId = INITBL_GetIntConfig(INITBL_OBJ, APP_PERF_ID);  
 
       Bc42Intf.CmdMid            = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_CMD_TOPICID));
-      Bc42Intf.SendStatusTlmMid  = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_STATUS_TLM_TOPICID));
-      Bc42Intf.ExecuteMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC_SCH_2_HZ_TOPICID));
+      Bc42Intf.ExecuteMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC_SCH_1_HZ_TOPICID));
       Bc42Intf.ActuatorCmdMsgMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_ACTUATOR_CMD_MSG_TOPICID));
 
       COMM42_Constructor(COMM42_OBJ, INITBL_OBJ);
@@ -348,7 +348,6 @@ static int32 InitApp(void)
       SbQos.Reliability = 0;
       CFE_SB_CreatePipe(&Bc42Intf.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME));
       CFE_SB_Subscribe(Bc42Intf.CmdMid, Bc42Intf.CmdPipe);
-      CFE_SB_Subscribe(Bc42Intf.SendStatusTlmMid, Bc42Intf.CmdPipe);
       CFE_SB_SubscribeEx(Bc42Intf.ExecuteMid, Bc42Intf.CmdPipe, SbQos, INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_EXE_MSG_LIM));
       CFE_SB_SubscribeEx(Bc42Intf.ActuatorCmdMsgMid, Bc42Intf.CmdPipe, SbQos, INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_ACT_MSG_LIM));
 
@@ -373,7 +372,7 @@ static int32 InitApp(void)
 
    } /* End if INITBL Constructed */ 
    
-   return(RetStatus);
+   return RetStatus;
 
 } /* End of InitApp() */
 
@@ -400,7 +399,7 @@ static int32 ProcessCmdPipe(void)
    
    
    CFE_ES_PerfLogExit(Bc42Intf.PerfId);
-   SbStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, Bc42Intf.CmdPipe, CFE_SB_POLL);
+   SbStatus = CFE_SB_ReceiveBuffer(&SbBufPtr, Bc42Intf.CmdPipe, CFE_SB_PEND_FOREVER);
    CFE_ES_PerfLogEntry(Bc42Intf.PerfId);
    
    do
@@ -427,18 +426,15 @@ static int32 ProcessCmdPipe(void)
                COMM42_ManageExecution();
                ++ExecuteCycle;
                ExecuteLoop = true;
+               SendHousekeepingPkt();
             }
             else if (CFE_SB_MsgId_Equal(MsgId, Bc42Intf.ActuatorCmdMsgMid))
             {
                COMM42_SendActuatorCmds((BC42_INTF_ActuatorCmdMsg_t *)&SbBufPtr->Msg);
             }
-            else if (CFE_SB_MsgId_Equal(MsgId, Bc42Intf.SendStatusTlmMid))
-            {
-               SendHousekeepingPkt();
-            }
             else
             {            
-               CFE_EVS_SendEvent(BC42_INTF_INVALID_MID_EID, CFE_EVS_EventType_ERROR,
+               CFE_EVS_SendEvent(BC42_INTF_PROCESS_CMD_PIPE_EID, CFE_EVS_EventType_ERROR,
                                  "Received invalid command packet, MID = 0x%04X(%d)", 
                                  CFE_SB_MsgIdToValue(MsgId), CFE_SB_MsgIdToValue(MsgId));
             }

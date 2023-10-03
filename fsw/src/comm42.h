@@ -49,11 +49,12 @@
 
 #define COMM42_CREATE_SEM_EID       (COMM42_BASE_EID + 0)
 #define COMM42_SOCKET_OPEN_EID      (COMM42_BASE_EID + 1)
-#define COMM42_SOCKET_BIND_EID      (COMM42_BASE_EID + 2)
-#define COMM42_SOCKET_CLOSE_EID     (COMM42_BASE_EID + 3)
-#define COMM42_SKIP_INIT_CYCLE_EID  (COMM42_BASE_EID + 4)
-#define COMM42_NO_ACTUATOR_CMD_EID  (COMM42_BASE_EID + 5)
-#define COMM42_DEBUG_EID            (COMM42_BASE_EID + 6)
+#define COMM42_SOCKET_CONNECT_EID   (COMM42_BASE_EID + 2)
+#define COMM42_SOCKET_TASK_EID      (COMM42_BASE_EID + 3)
+#define COMM42_SOCKET_CLOSE_EID     (COMM42_BASE_EID + 4)
+#define COMM42_SKIP_INIT_CYCLE_EID  (COMM42_BASE_EID + 5)
+#define COMM42_NO_ACTUATOR_CMD_EID  (COMM42_BASE_EID + 6)
+#define COMM42_DEBUG_EID            (COMM42_BASE_EID + 7)
 
 
 /**********************/
@@ -82,21 +83,27 @@ typedef struct
    ** Object Data
    */
 
+   bool    ChildTaskRun;
    uint32  ChildTaskId;
    uint32  WakeUpSemaphore;
    
    bool    InitCycle;
-   bool    ActuatorCmdMsgSent;     /* Used for each control cycle */
+   bool    ActuatorCmdMsgSent;   /* Used for each control cycle */
    uint32  SensorDataMsgCnt;
    uint32  ActuatorCmdMsgCnt;
    uint32  ExecuteCycleCnt;
-   uint16  UnclosedCycleCnt;    /* 'Unclosed' is when ManageExecution() called but sesnor-ctrl-actuator cycle didn't finish */ 
+   uint16  UnclosedCycleCnt;    /* 'Unclosed' is when ManageExecution() called but sensor-ctrl-actuator cycle didn't finish */ 
    uint16  UnclosedCycleLim;
    
    bool           SocketConnected;
    osal_id_t      SocketId;
    OS_SockAddr_t  SocketAddr;
- 
+   
+   // 42 Socket Data
+   SOCKET  SocketFd;
+   char    IpAddrStr[16];
+   uint16  Port;
+   
    /*
    ** Contained Objects
    */
@@ -170,6 +177,14 @@ void COMM42_ResetStatus(void);
 ** Send actuator commandd data to 42.
 */
 bool COMM42_SendActuatorCmds(const BC42_INTF_ActuatorCmdMsg_t *ActuatorCmdMsg); 
+
+
+/******************************************************************************
+** Function: COMM42_Shutdown
+**
+** Close the socket and force a child task exit.
+*/
+void COMM42_Shutdown(void); 
 
 
 /******************************************************************************
