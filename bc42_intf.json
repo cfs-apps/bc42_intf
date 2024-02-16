@@ -1,0 +1,31 @@
+{
+
+   "app": {
+   
+   "title": "BC42_INTF",
+   "version": "1.0.0",
+   "supplier": "Open STEMware",
+   "copyright": "bitValence",
+   "url": "https://github.com/cfs-apps/bc42_ctrl",
+
+   "description": [
+      "Provides a command and telemetry interface to the ",
+      "42 simulator." 
+   ],
+
+   "cfs": {
+      "cfe-type": "CFE_APP",
+      "obj-file": "bc42_intf",
+      "entry-symbol": "BC42_INTF_AppMain",
+      "name": "BC42_INTF",
+      "priority": 40,
+      "stack": 80192,
+      "load_addr": 0,
+      "exception-action": 0,
+      "app-framework": "osk",
+      "tables": ["bc42_intf_ini.json"]
+   },
+
+   "requires": ["app_c_fw","bc42_lib"]
+
+}}

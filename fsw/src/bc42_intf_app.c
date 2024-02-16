@@ -326,7 +326,7 @@ static int32 InitApp(void)
       Bc42Intf.PerfId = INITBL_GetIntConfig(INITBL_OBJ, APP_PERF_ID);  
 
       Bc42Intf.CmdMid            = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_CMD_TOPICID));
-      Bc42Intf.ExecuteMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC_SCH_1_HZ_TOPICID));
+      Bc42Intf.ExecuteMid        = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_EXECUTE_TOPICID));
       Bc42Intf.ActuatorCmdMsgMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_ACTUATOR_CMD_MSG_TOPICID));
 
       COMM42_Constructor(COMM42_OBJ, INITBL_OBJ);

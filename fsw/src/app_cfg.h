@@ -40,10 +40,11 @@
 **
 ** 1.0 - Initial Basecamp release created from OpenSatKit and upgraded to the
 **       latest 42 version
+** 1.1 - Change from 2 Hz to 1 Hz scheduler message
 */
 
 #define  BC42_INTF_MAJOR_VER   1
-#define  BC42_INTF_MINOR_VER   0
+#define  BC42_INTF_MINOR_VER   1
 
 
 /******************************************************************************
@@ -64,7 +65,7 @@
 #define CFG_BC42_INTF_STATUS_TLM_TOPICID       BC42_INTF_STATUS_TLM_TOPICID
 #define CFG_BC42_INTF_SENSOR_DATA_MSG_TOPICID  BC42_INTF_SENSOR_DATA_MSG_TOPICID
 #define CFG_BC42_INTF_ACTUATOR_CMD_MSG_TOPICID BC42_INTF_ACTUATOR_CMD_MSG_TOPICID
-#define CFG_BC_SCH_1_HZ_TOPICID                BC_SCH_1_HZ_TOPICID
+#define CFG_BC42_INTF_EXECUTE_TOPICID          BC_SCH_1_HZ_TOPICID    // Use different CFG_ name instead of BC_SCH_*_TOPICID to localize impact if rate changes
 
 #define CFG_CHILD_NAME        CHILD_NAME
 #define CFG_CHILD_STACK_SIZE  CHILD_STACK_SIZE
