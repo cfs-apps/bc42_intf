@@ -54,8 +54,7 @@
            <Dimension size="4"/>
         </DimensionList>
       </ArrayDataType>
-      
-      <StringDataType name="char_x_16" length="16" />
+
       
       <!--***************************************-->
       <!--**** DataTypeSet: Command Payloads ****-->
@@ -70,8 +69,8 @@
 
       <ContainerDataType name="ConnectCmd_Payload" shortDescription="Connect to 42 socket">
         <EntryList>
-          <Entry name="IpAddrStr" type="char_x_16"         shortDescription="IP address to send to" />
-          <Entry name="Port"      type="BASE_TYPES/uint16" shortDescription="Port number" />
+          <Entry name="IpAddrStr" type="APP_C_FW/IPv4Address"  shortDescription="IP address to send to" />
+          <Entry name="Port"      type="BASE_TYPES/uint16"     shortDescription="Port number" />
         </EntryList>
       </ContainerDataType>
 
@@ -129,13 +128,13 @@
       <ContainerDataType name="CommandBase" baseType="CFE_HDR/CommandHeader">
       </ContainerDataType>
 
-      <ContainerDataType name="NoopCmd" baseType="CommandBase" shortDescription="Generate an info event message with app version">
+      <ContainerDataType name="Noop" baseType="CommandBase" shortDescription="Generate an info event message with app version">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/NOOP_CC}" />
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="ResetCmd" baseType="CommandBase" shortDescription="Reset app to a known state">
+      <ContainerDataType name="Reset" baseType="CommandBase" shortDescription="Reset app to a known state">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/RESET_CC}" />
         </ConstraintSet>

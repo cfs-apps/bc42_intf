@@ -6,7 +6,7 @@
    "version": "1.0.0",
    "supplier": "Open STEMware",
    "copyright": "bitValence",
-   "url": "https://github.com/cfs-apps/bc42_ctrl",
+   "url": "https://github.com/cfs-apps/bc42_intf",
 
    "description": [
       "Provides a command and telemetry interface to the ",
