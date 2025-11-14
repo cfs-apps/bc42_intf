@@ -45,10 +45,9 @@
 #define BC42_INTF_INIT_APP_EID         (BC42_INTF_BASE_EID + 0)
 #define BC42_INTF_EXIT_EID             (BC42_INTF_BASE_EID + 1)
 #define BC42_INTF_EXECUTE_CMD_EID      (BC42_INTF_BASE_EID + 2)
-#define BC42_INTF_CONNECT_TO_42_EID    (BC42_INTF_BASE_EID + 3)
-#define BC42_INTF_NOOP_EID             (BC42_INTF_BASE_EID + 4)
-#define BC42_INTF_PROCESS_CMD_PIPE_EID (BC42_INTF_BASE_EID + 5)
-#define BC42_INTF_DEBUG_EID            (BC42_INTF_BASE_EID + 6)
+#define BC42_INTF_NOOP_EID             (BC42_INTF_BASE_EID + 3)
+#define BC42_INTF_PROCESS_CMD_PIPE_EID (BC42_INTF_BASE_EID + 4)
+#define BC42_INTF_DEBUG_EID            (BC42_INTF_BASE_EID + 5)
 
 
 /**********************/
@@ -82,32 +81,15 @@ typedef struct
    INITBL_Class_t      IniTbl; 
    CFE_SB_PipeId_t     CmdPipe;
    CMDMGR_Class_t      CmdMgr;
-   CHILDMGR_Class_t    ChildMgr;
-   CHILDMGR_TaskInit_t ChildTask;
 
    /*
    ** App State
    */ 
-   uint32  IpPort;
-   char    IpAddrStr[BC42_INTF_IP_ADDR_STR_LEN];
    
    uint32          PerfId;
    CFE_SB_MsgId_t  CmdMid;
-   CFE_SB_MsgId_t  ActuatorCmdMsgMid;
-   CFE_SB_MsgId_t  ExecuteMid;
-
-
-   uint16  ExecuteCycleCnt;
-
-   uint32  ExecuteMsgCycles;     /* Number of cycles to perform for each execute message */
-   uint16  ExecuteMsgCycleMin;
-   uint16  ExecuteMsgCycleMax;
-   
-   uint16  ExecuteCycleDelay;    /* Delays between execution cycles */
-   uint16  ExecuteCycleDelayMin;
-   uint16  ExecuteCycleDelayMax;
-
-   
+   CFE_SB_MsgId_t  StatusMid;
+ 
    /*
    ** Telemetry Packets
    */
@@ -154,7 +136,7 @@ bool BC42_INTF_ConfigExecuteStepCmd(void *ObjDataPtr, const CFE_MSG_Message_t *M
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr function signature
 */
-bool BC42_INTF_ConnectCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool BC42_INTF_StartSimCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
@@ -163,7 +145,7 @@ bool BC42_INTF_ConnectCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr function signature
 */
-bool BC42_INTF_DisconnectCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+bool BC42_INTF_StopSimCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************

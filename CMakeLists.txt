@@ -1,5 +1,6 @@
 project(CFS_BC42_INTF C)
 
+add_definitions(-D_AC_STANDALONE_)
 
 include_directories(fsw/src)
 include_directories(fsw/mission_inc)

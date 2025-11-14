@@ -25,6 +25,7 @@
 **       sensors and actuators so BC42_INTF_APP's functionality may be 
 **       distributed. Even with multiple interface apps, having a single app to
 **       aggregate and synchronize sensor data is often helpful.
+**    TODO: Consider a pause sim command
 **
 */
 #ifndef _comm42_
@@ -47,15 +48,11 @@
 ** Event Message IDs
 */
 
-#define COMM42_CREATE_SEM_EID       (COMM42_BASE_EID + 0)
-#define COMM42_SOCKET_OPEN_EID      (COMM42_BASE_EID + 1)
-#define COMM42_SOCKET_CONNECT_EID   (COMM42_BASE_EID + 2)
-#define COMM42_SOCKET_TASK_EID      (COMM42_BASE_EID + 3)
-#define COMM42_SOCKET_CLOSE_EID     (COMM42_BASE_EID + 4)
-#define COMM42_SKIP_INIT_CYCLE_EID  (COMM42_BASE_EID + 5)
-#define COMM42_NO_ACTUATOR_CMD_EID  (COMM42_BASE_EID + 6)
-#define COMM42_DEBUG_EID            (COMM42_BASE_EID + 7)
-
+#define COMM42_CREATE_SEM_EID            (COMM42_BASE_EID + 0)
+#define COMM42_START_SIM_EID             (COMM42_BASE_EID + 1)
+#define COMM42_STOP_SIM_EID              (COMM42_BASE_EID + 2)
+#define COMM42_DATA_PIPE_ERR_EID         (COMM42_BASE_EID + 3)
+#define COMM42_CONTROL_LOOP_TASK_ERR_EID (COMM42_BASE_EID + 4)
 
 /**********************/
 /** Type Definitions **/
@@ -80,32 +77,36 @@ typedef struct
 {
 
    /*
+   ** App Framework
+   */
+   
+   CFE_SB_PipeId_t     DataPipe;
+   CHILDMGR_Class_t    ChildMgr;
+   CHILDMGR_TaskInit_t ChildTask;
+   
+   /*
    ** Object Data
    */
 
-   bool    ChildTaskRun;
+   bool    TerminateChildTask;
    uint32  ChildTaskId;
-   uint32  WakeUpSemaphore;
    
    bool    InitCycle;
-   bool    ActuatorCmdMsgSent;   /* Used for each control cycle */
+   bool    SimActive;
+   bool    ActuatorCmdSentTo42;  /* Set for each control cycle */
    uint32  SensorDataMsgCnt;
    uint32  ActuatorCmdMsgCnt;
    uint32  ExecuteCycleCnt;
-   uint16  UnclosedCycleCnt;    /* 'Unclosed' is when ManageExecution() called but sensor-ctrl-actuator cycle didn't finish */ 
-   uint16  UnclosedCycleLim;
-   
-   bool           SocketConnected;
-   osal_id_t      SocketId;
-   OS_SockAddr_t  SocketAddr;
-   
-   // 42 Socket Data
-   SOCKET  SocketFd;
-   char    IpAddrStr[16];
-   uint16  Port;
+   uint16  UnclosedCycleCnt;     /* 'Unclosed' cycle is when a SB pend TIMEOUT occurs for an actuator messsage */ 
+   uint16  UnclosedCycleLim;     /* Current sim is terminated when this limit is reached */
+
+   uint32  ActuatorCmdMsgTimeout;
+   CFE_SB_MsgId_t  ActuatorCmdMsgMid;
+    
+   uint16  Bc42Port;
    
    /*
-   ** Contained Objects
+   ** Referenced Objects
    */
    
    BC42_Class_t *Bc42;
@@ -136,35 +137,6 @@ void COMM42_Constructor(COMM42_Class_t *Bc42Intf, const INITBL_Class_t *IniTbl);
 
 
 /******************************************************************************
-** Function: COMM42_Close
-**
-*/
-void COMM42_Close(void);
-
-
-/******************************************************************************
-** Function:  COMM42_ConnectSocket
-**
-*/
-bool COMM42_ConnectSocket(const char *AddrStr, uint32 Port);
-
-
-/******************************************************************************
-** Function:  COMM42_ManageExecution
-**
-*/
-void COMM42_ManageExecution(void);
-
-
-/******************************************************************************
-** Function: COMM42_RecvSensorData
-**
-** Read sensor data from 42 socket and load process sensor data packet.
-*/
-bool COMM42_RecvSensorData(BC42_INTF_SensorDataMsg_t *SensorDataMsg);
-
-
-/******************************************************************************
 ** Function: COMM42_ResetStatus
 **
 */
@@ -172,29 +144,27 @@ void COMM42_ResetStatus(void);
 
 
 /******************************************************************************
-** Function: COMM42_SendActuatorCmds
-**
-** Send actuator commandd data to 42.
-*/
-bool COMM42_SendActuatorCmds(const BC42_INTF_ActuatorCmdMsg_t *ActuatorCmdMsg); 
-
-
-/******************************************************************************
 ** Function: COMM42_Shutdown
 **
 ** Close the socket and force a child task exit.
+** 
 */
-void COMM42_Shutdown(void); 
+void COMM42_Shutdown(void);
 
 
 /******************************************************************************
-** Function: COMM42_SocketTask
-**
-** Notes:
-**   1. Returning false causes the child task to terminate.
+** Function:  COMM42_StartSim
 **
 */
-bool COMM42_SocketTask(CHILDMGR_Class_t* ChildMgr);
+bool COMM42_StartSimCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
+
+
+/******************************************************************************
+** Function: COMM42_StopSimCmd
+**
+** Close the socket and force a child task exit.
+*/
+bool COMM42_StopSimCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 #endif /* _comm42_ */

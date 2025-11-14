@@ -67,13 +67,6 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="ConnectCmd_Payload" shortDescription="Connect to 42 socket">
-        <EntryList>
-          <Entry name="IpAddrStr" type="APP_C_FW/IPv4Address"  shortDescription="IP address to send to" />
-          <Entry name="Port"      type="BASE_TYPES/uint16"     shortDescription="Port number" />
-        </EntryList>
-      </ContainerDataType>
-
       <!--*****************************************-->
       <!--**** DataTypeSet: Telemetry Payloads ****-->
       <!--*****************************************-->
@@ -82,10 +75,10 @@
         <EntryList>
           <Entry name="ValidCmdCnt"        type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"      type="BASE_TYPES/uint16" />          
+          <Entry name="SimActive      "    type="APP_C_FW/BooleanUint8" />
+          <Entry name="ExecuteCycleCnt"    type="BASE_TYPES/uint16" shortDescription="Execute cycles during a sim" />
           <Entry name="SensorDataMsgCnt"   type="BASE_TYPES/uint32" />
           <Entry name="ActuatorCmdMsgCnt"  type="BASE_TYPES/uint32" />
-          <Entry name="ExecuteCycleCnt"    type="BASE_TYPES/uint16" shortDescription="Execute cycles while connected" />
-          <Entry name="SocketConnected"    type="APP_C_FW/BooleanUint8" />
         </EntryList>
       </ContainerDataType>
 
@@ -140,7 +133,7 @@
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="ConfigExecuteCmd" baseType="CommandBase" shortDescription="Configure behavior when an execute message is received">
+      <ContainerDataType name="ConfigExecuteCmd" baseType="CommandBase" shortDescription="TODO: Decide whether to keep with new 42 interface design">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
@@ -149,13 +142,13 @@
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="ConnectCmd" baseType="CommandBase" shortDescription="Connect to the 42 simulator socket">
+      <ContainerDataType name="StartSimCmd" baseType="CommandBase" shortDescription="Start a simultiuon with 42. 42 Must be started in Standalone before issubng this command">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="DisconnectCmd" baseType="CommandBase" shortDescription="Disconnect from the 42 simulator socket">
+      <ContainerDataType name="StopSimCmd" baseType="CommandBase" shortDescription="Start a simultiuon with 42">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>
