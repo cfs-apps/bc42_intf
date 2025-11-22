@@ -60,10 +60,9 @@
       <!--**** DataTypeSet: Command Payloads ****-->
       <!--***************************************-->
 
-      <ContainerDataType name="ConfigExecuteCmd_Payload" shortDescription="Configure behavior when an execute message is received">
+      <ContainerDataType name="SetCtrlPeriodCmd_Payload" shortDescription="Set the time period (milliseconds) of each control cycle">
         <EntryList>
-          <Entry name="MsgCycles"   type="BASE_TYPES/uint16" shortDescription="Number of cycles for each execute msg wakeup" />
-          <Entry name="CycleDelay"  type="BASE_TYPES/uint16" shortDescription="Delay(ms) between execution cycles" />
+          <Entry name="CtrlPeriod" type="BASE_TYPES/uint32" shortDescription="Control cycle time in milliseconds" />
         </EntryList>
       </ContainerDataType>
 
@@ -133,22 +132,22 @@
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="ConfigExecuteCmd" baseType="CommandBase" shortDescription="TODO: Decide whether to keep with new 42 interface design">
+      <ContainerDataType name="SetCtrlPeriod" baseType="CommandBase" shortDescription="TODO: Coordinate this with 42 SimTime">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 0" />
         </ConstraintSet>
         <EntryList>
-          <Entry type="ConfigExecuteCmd_Payload" name="Payload" />
+          <Entry type="SetCtrlPeriodCmd_Payload" name="Payload" />
         </EntryList>
       </ContainerDataType>
 
-      <ContainerDataType name="StartSimCmd" baseType="CommandBase" shortDescription="Start a simultiuon with 42. 42 Must be started in Standalone before issubng this command">
+      <ContainerDataType name="StartSim" baseType="CommandBase" shortDescription="Start a simulation with 42. 42 Must be started in Standalone before issubng this command">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 1" />
         </ConstraintSet>
       </ContainerDataType>
 
-      <ContainerDataType name="StopSimCmd" baseType="CommandBase" shortDescription="Start a simultiuon with 42">
+      <ContainerDataType name="StopSim" baseType="CommandBase" shortDescription="Stop a simulation with 42">
         <ConstraintSet>
           <ValueConstraint entry="Sec.FunctionCode" value="${APP_C_FW/APP_BASE_CC} + 2" />
         </ConstraintSet>

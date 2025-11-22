@@ -130,6 +130,27 @@ void COMM42_ResetStatus(void)
 
 
 /******************************************************************************
+** Function: COMM42_SetCtrlPeriodCmd
+**
+** TODO: BC42_INTF_ConfigExecuteCmd() ecide whether to adpat to COMM42 pipe pend mod 
+*/
+
+bool COMM42_SetCtrlPeriodCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
+{
+   
+   const BC42_INTF_SetCtrlPeriodCmd_Payload_t *Cmd = CMDMGR_PAYLOAD_PTR(MsgPtr, BC42_INTF_SetCtrlPeriod_t);
+   bool RetStatus = true;
+   
+   CFE_EVS_SendEvent(COMM42_SET_CTRL_PERIOD_EID, CFE_EVS_EventType_INFORMATION,
+                     "Control period set to %d (TODO: Implement the command)", Cmd->CtrlPeriod);   
+   
+      
+   return RetStatus;
+
+} /* End COMM42_SetCtrlPeriodCmd() */
+
+
+/******************************************************************************
 ** Function: COMM42_Shutdown
 **
 ** Close the socket and force a child task exit. The sequence of this code must

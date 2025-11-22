@@ -124,14 +124,7 @@ void BC42_INTF_AppMain(void);
 
 
 /******************************************************************************
-** Function: BC42_INTF_ConfigExecuteStepCmd
-**
-*/
-bool BC42_INTF_ConfigExecuteStepCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
-
-
-/******************************************************************************
-** Function: BC42_INTF_ConnectCmd
+** Function: BC42_INTF_StartSimCmd
 **
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr function signature
@@ -140,7 +133,7 @@ bool BC42_INTF_StartSimCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************
-** Function: BC42_INTF_DisconnectCmd
+** Function: BC42_INTF_StopSimCmd
 **
 ** Notes:
 **   1. Must match CMDMGR_CmdFuncPtr function signature

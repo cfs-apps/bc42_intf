@@ -53,6 +53,7 @@
 #define COMM42_STOP_SIM_EID              (COMM42_BASE_EID + 2)
 #define COMM42_DATA_PIPE_ERR_EID         (COMM42_BASE_EID + 3)
 #define COMM42_CONTROL_LOOP_TASK_ERR_EID (COMM42_BASE_EID + 4)
+#define COMM42_SET_CTRL_PERIOD_EID       (COMM42_BASE_EID + 5)
 
 /**********************/
 /** Type Definitions **/
@@ -141,6 +142,13 @@ void COMM42_Constructor(COMM42_Class_t *Bc42Intf, const INITBL_Class_t *IniTbl);
 **
 */
 void COMM42_ResetStatus(void);
+
+
+/******************************************************************************
+** Function: COMM42_SetCtrlPeriodCmd
+**
+*/
+bool COMM42_SetCtrlPeriodCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr);
 
 
 /******************************************************************************

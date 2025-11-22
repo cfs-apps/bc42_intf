@@ -115,23 +115,7 @@ void BC42_INTF_AppMain(void)
 } /* End of BC42_INTF_AppMain() */
 
 
-/******************************************************************************
-** Function: BC42_INTF_ConfigExecuteCmd
-**
-** TODO: BC42_INTF_ConfigExecuteCmd() ecide whether to adpat to COMM42 pipe pend mod 
-*/
 
-bool BC42_INTF_ConfigExecuteCmd(void *ObjDataPtr, const CFE_MSG_Message_t *MsgPtr)
-{
-   
-   //const BC42_INTF_ConfigExecuteCmd_Payload_t *Cmd = CMDMGR_PAYLOAD_PTR(MsgPtr, BC42_INTF_ConfigExecuteCmd_t);
-   bool RetStatus = false;
-      
-   return RetStatus;
-
-} /* End BC42_INTF_ConfigExecuteCmd() */
-
-  
 /******************************************************************************
 ** Function: BC42_INTF_NoOpCmd
 **
@@ -217,11 +201,11 @@ static int32 InitApp(void)
       CFE_SB_Subscribe(Bc42Intf.StatusMid, Bc42Intf.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_NOOP_CC,           NULL, BC42_INTF_NoOpCmd,          0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_RESET_CC,          NULL, BC42_INTF_ResetAppCmd,      0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_CONFIG_EXECUTE_CC, NULL, BC42_INTF_ConfigExecuteCmd, sizeof(BC42_INTF_ConfigExecuteCmd_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_START_SIM_CC,      NULL, COMM42_StartSimCmd,         0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_STOP_SIM_CC,       NULL, COMM42_StopSimCmd,          0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_NOOP_CC,            NULL, BC42_INTF_NoOpCmd,       0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_RESET_CC,           NULL, BC42_INTF_ResetAppCmd,   0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_SET_CTRL_PERIOD_CC, NULL, COMM42_SetCtrlPeriodCmd, sizeof(BC42_INTF_SetCtrlPeriodCmd_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_START_SIM_CC,       NULL, COMM42_StartSimCmd,      0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_STOP_SIM_CC,        NULL, COMM42_StopSimCmd,       0);
 
       CFE_MSG_Init(CFE_MSG_PTR(Bc42Intf.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_STATUS_TLM_TOPICID)), sizeof(BC42_INTF_StatusTlm_t));
           
