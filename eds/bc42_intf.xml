@@ -74,8 +74,9 @@
         <EntryList>
           <Entry name="ValidCmdCnt"        type="BASE_TYPES/uint16" />
           <Entry name="InvalidCmdCnt"      type="BASE_TYPES/uint16" />          
-          <Entry name="SimActive      "    type="APP_C_FW/BooleanUint8" />
+          <Entry name="SimActive      "    type="APP_C_FW/BooleanUint16" />
           <Entry name="ExecuteCycleCnt"    type="BASE_TYPES/uint16" shortDescription="Execute cycles during a sim" />
+          <Entry name="UnclosedCycleCnt"   type="BASE_TYPES/uint16" shortDescription="Execution cycles when actuator commands not received within timeout period" />
           <Entry name="SensorDataMsgCnt"   type="BASE_TYPES/uint32" />
           <Entry name="ActuatorCmdMsgCnt"  type="BASE_TYPES/uint32" />
         </EntryList>

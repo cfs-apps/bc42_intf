@@ -48,12 +48,13 @@
 ** Event Message IDs
 */
 
-#define COMM42_CREATE_SEM_EID            (COMM42_BASE_EID + 0)
-#define COMM42_START_SIM_EID             (COMM42_BASE_EID + 1)
-#define COMM42_STOP_SIM_EID              (COMM42_BASE_EID + 2)
-#define COMM42_DATA_PIPE_ERR_EID         (COMM42_BASE_EID + 3)
-#define COMM42_CONTROL_LOOP_TASK_ERR_EID (COMM42_BASE_EID + 4)
-#define COMM42_SET_CTRL_PERIOD_EID       (COMM42_BASE_EID + 5)
+#define COMM42_CREATE_SEM_EID              (COMM42_BASE_EID + 0)
+#define COMM42_START_SIM_EID               (COMM42_BASE_EID + 1)
+#define COMM42_STOP_SIM_EID                (COMM42_BASE_EID + 2)
+#define COMM42_DATA_PIPE_ERR_EID           (COMM42_BASE_EID + 3)
+#define COMM42_CONTROL_LOOP_TASK_ERR_EID   (COMM42_BASE_EID + 4)
+#define COMM42_SET_CTRL_PERIOD_EID         (COMM42_BASE_EID + 5)
+#define COMM42_WRITE_ACTUATOR_DATA_ERR_EID (COMM42_BASE_EID + 6)
 
 /**********************/
 /** Type Definitions **/
@@ -90,8 +91,7 @@ typedef struct
    */
 
    bool    TerminateChildTask;
-   uint32  ChildTaskId;
-   
+      
    bool    InitCycle;
    bool    SimActive;
    bool    ActuatorCmdSentTo42;  /* Set for each control cycle */
@@ -105,7 +105,7 @@ typedef struct
    CFE_SB_MsgId_t  ActuatorCmdMsgMid;
     
    uint16  Bc42Port;
-   
+      
    /*
    ** Referenced Objects
    */

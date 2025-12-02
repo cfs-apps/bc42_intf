@@ -307,6 +307,7 @@ void SendHousekeepingPkt(void)
    
    Payload->SimActive         = Bc42Intf.Comm42.SimActive;
    Payload->ExecuteCycleCnt   = Bc42Intf.Comm42.ExecuteCycleCnt;
+   Payload->UnclosedCycleCnt  = Bc42Intf.Comm42.UnclosedCycleCnt;
    Payload->SensorDataMsgCnt  = Bc42Intf.Comm42.SensorDataMsgCnt;
    Payload->ActuatorCmdMsgCnt = Bc42Intf.Comm42.ActuatorCmdMsgCnt;
 
