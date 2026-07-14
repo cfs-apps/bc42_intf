@@ -43,12 +43,13 @@
 ** 1.1 - Change from 2 Hz to 1 Hz scheduler message
 ** 2.0 - Updated 42 versions on 9/5/25. 42's standalone AcApp had a design
 **       overhaul that greatly simplifies this app.
-** 3.0 - Compatible with Basecamp 4.0 and cFS 7.0
+** 3.0 - Compatible with Basecamp 3.3 and cFS 6.8
+** 3.1 - Minor updates
 **
 */
 
 #define  BC42_INTF_MAJOR_VER   3
-#define  BC42_INTF_MINOR_VER   0
+#define  BC42_INTF_MINOR_VER   1
 
 
 /******************************************************************************
