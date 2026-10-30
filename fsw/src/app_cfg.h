@@ -45,11 +45,12 @@
 **       overhaul that greatly simplifies this app.
 ** 3.0 - Compatible with Basecamp 3.3 and cFS 6.8
 ** 3.1 - Minor updates
+** 4.0 - Updated to cFS 7.0 (Basecamp 4.0 release)
 **
 */
 
-#define  BC42_INTF_MAJOR_VER   3
-#define  BC42_INTF_MINOR_VER   1
+#define  BC42_INTF_MAJOR_VER   4
+#define  BC42_INTF_MINOR_VER   0
 
 
 /******************************************************************************
@@ -63,11 +64,11 @@
 #define CFG_APP_CMD_PIPE_DEPTH  APP_CMD_PIPE_DEPTH
 #define CFG_APP_CMD_PIPE_NAME   APP_CMD_PIPE_NAME
 
+#define CFG_BC42_INTF_SEND_STATUS_TLM_TOPICID  BC_SCH_4_SEC_TOPICID    // Use different CFG_ name instead of BC_SCH_*_TOPICID to localize impact if rate changes
 #define CFG_BC42_INTF_CMD_TOPICID              BC42_INTF_CMD_TOPICID
 #define CFG_BC42_INTF_STATUS_TLM_TOPICID       BC42_INTF_STATUS_TLM_TOPICID
 #define CFG_BC42_INTF_SENSOR_DATA_MSG_TOPICID  BC42_INTF_SENSOR_DATA_MSG_TOPICID
 #define CFG_BC42_INTF_ACTUATOR_CMD_MSG_TOPICID BC42_INTF_ACTUATOR_CMD_MSG_TOPICID
-#define CFG_BC42_INTF_STATUS_TOPICID           BC_SCH_4_SEC_TOPICID    // Use different CFG_ name instead of BC_SCH_*_TOPICID to localize impact if rate changes
 
 #define CFG_CHILD_NAME                  CHILD_NAME
 #define CFG_CHILD_STACK_SIZE            CHILD_STACK_SIZE
@@ -88,11 +89,11 @@
    XX(APP_PERF_ID,uint32) \
    XX(APP_CMD_PIPE_DEPTH,uint32) \
    XX(APP_CMD_PIPE_NAME,char*) \
+   XX(BC_SCH_4_SEC_TOPICID,uint32) \
    XX(BC42_INTF_CMD_TOPICID,uint32) \
    XX(BC42_INTF_STATUS_TLM_TOPICID,uint32) \
    XX(BC42_INTF_SENSOR_DATA_MSG_TOPICID,uint32) \
    XX(BC42_INTF_ACTUATOR_CMD_MSG_TOPICID,uint32) \
-   XX(BC_SCH_4_SEC_TOPICID,uint32) \
    XX(CHILD_NAME,char*) \
    XX(CHILD_STACK_SIZE,uint32) \
    XX(CHILD_PRIORITY,uint32) \
@@ -123,8 +124,8 @@ DECLARE_ENUM(Config,APP_CONFIG)
 ** exceeded so it is the developer's responsibility to verify the ranges. 
 */
 
-#define BC42_INTF_BASE_EID  (APP_C_FW_APP_BASE_EID +  0)
-#define COMM42_BASE_EID     (APP_C_FW_APP_BASE_EID + 20)
+#define BC42_INTF_BASE_EID  (EdsParam_APP_C_FW_APP_BASE_EID +  0)
+#define COMM42_BASE_EID     (EdsParam_APP_C_FW_APP_BASE_EID + 20)
 
 /*
 ** One event ID is used for all initialization debug messages. Uncomment one of

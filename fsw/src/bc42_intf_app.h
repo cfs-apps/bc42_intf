@@ -88,7 +88,7 @@ typedef struct
    
    uint32          PerfId;
    CFE_SB_MsgId_t  CmdMid;
-   CFE_SB_MsgId_t  StatusMid;
+   CFE_SB_MsgId_t  SendStatusTlmMid;
  
    /*
    ** Telemetry Packets

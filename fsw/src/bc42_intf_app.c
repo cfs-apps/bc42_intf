@@ -187,8 +187,8 @@ static int32 InitApp(void)
    
       Bc42Intf.PerfId = INITBL_GetIntConfig(INITBL_OBJ, APP_PERF_ID);  
 
-      Bc42Intf.CmdMid    = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_CMD_TOPICID));
-      Bc42Intf.StatusMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_STATUS_TOPICID));
+      Bc42Intf.CmdMid           = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_CMD_TOPICID));
+      Bc42Intf.SendStatusTlmMid = CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_SEND_STATUS_TLM_TOPICID));
 
       COMM42_Constructor(COMM42_OBJ, INITBL_OBJ);
                                             
@@ -198,14 +198,14 @@ static int32 InitApp(void)
 
       CFE_SB_CreatePipe(&Bc42Intf.CmdPipe, INITBL_GetIntConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_DEPTH), INITBL_GetStrConfig(INITBL_OBJ, CFG_APP_CMD_PIPE_NAME));
       CFE_SB_Subscribe(Bc42Intf.CmdMid, Bc42Intf.CmdPipe);
-      CFE_SB_Subscribe(Bc42Intf.StatusMid, Bc42Intf.CmdPipe);
+      CFE_SB_Subscribe(Bc42Intf.SendStatusTlmMid, Bc42Intf.CmdPipe);
 
       CMDMGR_Constructor(CMDMGR_OBJ);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_NOOP_CC,            NULL, BC42_INTF_NoOpCmd,       0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_RESET_CC,           NULL, BC42_INTF_ResetAppCmd,   0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_SET_CTRL_PERIOD_CC, NULL, COMM42_SetCtrlPeriodCmd, sizeof(BC42_INTF_SetCtrlPeriodCmd_Payload_t));
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_START_SIM_CC,       NULL, COMM42_StartSimCmd,      0);
-      CMDMGR_RegisterFunc(CMDMGR_OBJ, BC42_INTF_STOP_SIM_CC,        NULL, COMM42_StopSimCmd,       0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_BC42_INTF_NOOP_CC,            NULL, BC42_INTF_NoOpCmd,       0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_BC42_INTF_RESET_CC,           NULL, BC42_INTF_ResetAppCmd,   0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_BC42_INTF_SET_CTRL_PERIOD_CC, NULL, COMM42_SetCtrlPeriodCmd, sizeof(BC42_INTF_SetCtrlPeriodCmd_Payload_t));
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_BC42_INTF_START_SIM_CC,       NULL, COMM42_StartSimCmd,      0);
+      CMDMGR_RegisterFunc(CMDMGR_OBJ, EDS_CONTAINER_BC42_INTF_STOP_SIM_CC,        NULL, COMM42_StopSimCmd,       0);
 
       CFE_MSG_Init(CFE_MSG_PTR(Bc42Intf.StatusTlm.TelemetryHeader), CFE_SB_ValueToMsgId(INITBL_GetIntConfig(INITBL_OBJ, CFG_BC42_INTF_STATUS_TLM_TOPICID)), sizeof(BC42_INTF_StatusTlm_t));
           
@@ -261,7 +261,7 @@ static int32 ProcessCmdPipe(void)
          {
             CMDMGR_DispatchFunc(CMDMGR_OBJ, &SbBufPtr->Msg);
          }
-         else if (CFE_SB_MsgId_Equal(MsgId, Bc42Intf.StatusMid))
+         else if (CFE_SB_MsgId_Equal(MsgId, Bc42Intf.SendStatusTlmMid))
          {
             SendHousekeepingPkt();
          }
